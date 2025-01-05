@@ -1,7 +1,8 @@
 import { EditorContent, useEditor } from "@tiptap/react";
+import { Placeholder } from "@tiptap/extension-placeholder";
 import { Node, nodeInputRule, nodePasteRule } from "@tiptap/core";
-import "./App.css";
 import StarterKit from "@tiptap/starter-kit";
+import { InlineCode } from "./components/code";
 
 const colorRegexInput = /#([A-Fa-f0-9]{6})$/;
 const colorRegexPaste = /#([A-Fa-f0-9]{6})/g;
@@ -45,7 +46,7 @@ const ColorsPlugin = Node.create({
           return {
             style: getStyleString(attributes.color),
             "data-color": attributes.color || "transparent",
-            class: "color-marker",
+            class: "px-[1px] py-0.5 rounded-sm",
           };
         },
       },
@@ -87,7 +88,21 @@ const ColorsPlugin = Node.create({
 
 function Editor() {
   const editor = useEditor({
-    extensions: [StarterKit, ColorsPlugin],
+    extensions: [
+      StarterKit,
+      ColorsPlugin,
+      Placeholder.configure({
+        placeholder: "Paste or type your text here...",
+        emptyNodeClass:
+          "text-slate-700 before:content-[attr(data-placeholder)]",
+      }),
+    ],
+    editorProps: {
+      attributes: {
+        class:
+          "min-h-96 p-2 border border-slate-700 rounded-md font-mono outline-none focus:ring focus:ring-sky-500",
+      },
+    },
   });
 
   if (!editor) return null;
@@ -98,23 +113,41 @@ function Editor() {
 function App() {
   return (
     <>
-      <main>
-        <header>
-          <h1>Color Highlight</h1>
+      <main className="flex flex-col max-w-3xl mx-auto py-6">
+        <header className="pb-4">
+          <h1 className="text-2xl font-bold pb-2">Color Highlight</h1>
           <p>
-            Type a color in the hex format <code>#RRGGBB</code> to highlight it
-            or paste a text containing colors to see them highlighted. For
-            example, try pasting <code>#ff0000</code> or <code>#00ff00</code>.
+            Type a color in the hex format <InlineCode>#RRGGBB</InlineCode> to
+            highlight it or paste a text containing colors to see them
+            highlighted. For example, try pasting{" "}
+            <InlineCode>#0ea5e9</InlineCode> or <InlineCode>#020617</InlineCode>
+            .
           </p>
         </header>
         <Editor />
       </main>
-      <footer>
-        <div>
-          <a href="https://github.com/KacperHemperek/color-highlight">
-            Source Code
+      <footer className="flex flex-col gap-4 mt-auto bg-slate-950 text-center py-6 text-slate-300 text-sm">
+        <section>
+          Source code can be found on{" "}
+          <a
+            className="transition underline hover:text-slate-100"
+            href="https://github.com/KacperHemperek/color-highlight"
+            target="_blank"
+          >
+            Github
           </a>
-        </div>
+        </section>
+        <section>
+          If you found some bugs or have any suggestions, feel free to open an{" "}
+          <a
+            className="transition underline hover:text-slate-100"
+            href="https://github.com/KacperHemperek/color-highlight/issues/new"
+            target="_blank"
+          >
+            issue
+          </a>
+          .
+        </section>
       </footer>
     </>
   );
