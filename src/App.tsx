@@ -35,11 +35,13 @@ const ColorsPlugin = Node.create({
   group: "inline",
   inline: true,
   atom: false,
+  selectable: false,
   addAttributes() {
     return {
       color: {
         default: null,
         renderHTML(attributes) {
+          console.log("renderHTML for addAttributes", attributes);
           return {
             "data-color": attributes.color || "transparent",
           };
@@ -51,10 +53,15 @@ const ColorsPlugin = Node.create({
     return [
       {
         tag: "span[data-color]",
+        getAttrs: (dom) => {
+          const color = dom.getAttribute("data-color");
+          return color ? { color } : null; // Return null if no color attribute
+        },
       },
     ];
   },
   renderHTML({ HTMLAttributes }) {
+    console.log("renderHTML main", HTMLAttributes);
     const color = HTMLAttributes["data-color"];
     const attr = {
       style: getStyleString(color),
@@ -71,7 +78,9 @@ const ColorsPlugin = Node.create({
         handler({ match, range, state: { tr } }) {
           const start = range.from;
           let end = range.to;
+
           const newNode = type.create({ color: match[0] });
+
           if (match[0]) {
             const insertionStart = isInline ? start : start - 1;
 
@@ -91,6 +100,7 @@ const ColorsPlugin = Node.create({
         find: colorRegexPaste,
         type: this.type,
         getAttributes: (match) => {
+          console.log("getAttributes for addPasteRules", match);
           return {
             color: match[0],
           };
