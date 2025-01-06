@@ -1,6 +1,6 @@
 import { EditorContent, useEditor } from "@tiptap/react";
 import { Placeholder } from "@tiptap/extension-placeholder";
-import { Node, nodeInputRule, nodePasteRule } from "@tiptap/core";
+import { InputRule, mergeAttributes, Node, nodePasteRule } from "@tiptap/core";
 import StarterKit from "@tiptap/starter-kit";
 import { InlineCode } from "./components/code";
 
@@ -35,18 +35,13 @@ const ColorsPlugin = Node.create({
   group: "inline",
   inline: true,
   atom: false,
-  onUpdate() {
-    console.log(this.editor.getJSON());
-  },
   addAttributes() {
     return {
       color: {
         default: null,
         renderHTML(attributes) {
           return {
-            style: getStyleString(attributes.color),
             "data-color": attributes.color || "transparent",
-            class: "px-[1px] py-0.5 rounded-sm",
           };
         },
       },
@@ -60,16 +55,33 @@ const ColorsPlugin = Node.create({
     ];
   },
   renderHTML({ HTMLAttributes }) {
-    return ["span", HTMLAttributes, HTMLAttributes["data-color"]];
+    const color = HTMLAttributes["data-color"];
+    const attr = {
+      style: getStyleString(color),
+      class: "px-[1px] py-0.5 rounded-sm",
+    };
+    return ["span", mergeAttributes(HTMLAttributes, attr), color];
   },
   addInputRules() {
+    const type = this.type;
+    const isInline = type.isInline;
     return [
-      nodeInputRule({
+      new InputRule({
         find: colorRegexInput,
-        type: this.type,
-        getAttributes: (match) => ({
-          color: match[0],
-        }),
+        handler({ match, range, state: { tr } }) {
+          const start = range.from;
+          let end = range.to;
+          const newNode = type.create({ color: match[0] });
+          if (match[0]) {
+            const insertionStart = isInline ? start : start - 1;
+
+            tr.insert(insertionStart, newNode).delete(
+              tr.mapping.map(start),
+              tr.mapping.map(end),
+            );
+          }
+          tr.scrollIntoView();
+        },
       }),
     ];
   },
@@ -78,9 +90,11 @@ const ColorsPlugin = Node.create({
       nodePasteRule({
         find: colorRegexPaste,
         type: this.type,
-        getAttributes: (match) => ({
-          color: match[0],
-        }),
+        getAttributes: (match) => {
+          return {
+            color: match[0],
+          };
+        },
       }),
     ];
   },
@@ -93,7 +107,8 @@ function Editor() {
       ColorsPlugin,
       Placeholder.configure({
         placeholder: "Paste or type your text here...",
-        emptyNodeClass:
+        showOnlyCurrent: true,
+        emptyEditorClass:
           "text-slate-700 before:content-[attr(data-placeholder)]",
       }),
     ],
