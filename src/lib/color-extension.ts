@@ -31,7 +31,7 @@ export const ColorsPlugin = Node.create({
   group: "inline",
   inline: true,
   atom: false,
-  selectable: false,
+  selectable: true,
   addAttributes() {
     return {
       color: {
@@ -59,7 +59,7 @@ export const ColorsPlugin = Node.create({
     const color = HTMLAttributes["data-color"];
     const attr = {
       style: getStyleString(color),
-      class: "px-[1px] py-0.5 rounded-sm",
+      class: "px-0.5 py-px cursor-pointer rounded-sm",
     };
     return ["span", mergeAttributes(HTMLAttributes, attr), color];
   },
