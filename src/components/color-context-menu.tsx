@@ -30,16 +30,16 @@ const contextMenuPlugin = new Plugin<ContextMenuState>({
   state: {
     init: (): ContextMenuState => initialContextMenuState,
     apply(tr, prevState): ContextMenuState {
-      const eventData = tr.getMeta(contextMenuPluginKey);
+      const event = tr.getMeta(contextMenuPluginKey);
       // Handle possible events here
-      switch (eventData?.type) {
+      switch (event?.type) {
         case HIDE_COLOR_MENU:
           return initialContextMenuState;
         case SHOW_COLOR_MENU:
           return {
             showMenu: true,
-            nodePos: eventData.nodePos,
-            node: eventData.node,
+            nodePos: event.nodePos,
+            node: event.node,
           };
         default:
           return prevState;
@@ -130,6 +130,7 @@ export function ColorMenu({ editor }: ContextMenuProps) {
 
     return () => {
       // Cleanup event listeners
+      console.log("cleanup event listeners");
       editor.off("transaction", handleContextMenuTransaction);
     };
   }, [editor, handleContextMenuTransaction]);
@@ -141,11 +142,13 @@ export function ColorMenu({ editor }: ContextMenuProps) {
         type: HIDE_COLOR_MENU,
       });
       editor.view.dispatch(tr);
-      if (menuState.nodePos !== undefined)
+      if (menuState.nodePos !== undefined) {
+        // Focus editor and place cursor after the color node that was copied
         editor
           .chain()
           .focus(menuState.nodePos + 1)
           .run();
+      }
     }
   };
 
