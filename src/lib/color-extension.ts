@@ -30,7 +30,7 @@ export const ColorsPlugin = Node.create({
   name: "colorsMarker",
   group: "inline",
   inline: true,
-  atom: false,
+  atom: true,
   selectable: true,
   addAttributes() {
     return {

@@ -1,7 +1,7 @@
 import React from "react";
-import { Editor, Extension, FocusPosition } from "@tiptap/core";
+import { Editor, Extension } from "@tiptap/core";
 import { Plugin, PluginKey, Transaction } from "@tiptap/pm/state";
-import { Node } from "@tiptap/pm/model";
+import { Node, ResolvedPos } from "@tiptap/pm/model";
 import { EditorView } from "@tiptap/pm/view";
 import { CopyIcon } from "./icons/copy";
 import { EditIcon } from "./icons/edit";
@@ -47,13 +47,20 @@ const contextMenuPlugin = new Plugin<ContextMenuState>({
     },
   },
   props: {
-    handleClick(view: EditorView, pos: number, _event: MouseEvent): boolean {
-      const { doc } = view.state;
-      const node = doc.nodeAt(pos);
-      if (node && node.type.name === "colorsMarker") {
+    handleClick(view: EditorView, pos: number, event: MouseEvent): boolean {
+      const nodeEl = event.target as HTMLSpanElement;
+      if (nodeEl && "color" in nodeEl.dataset && nodeEl.dataset.color) {
+        // This is a workaround when clicking on the right side of the color node
+        // for some reason the pos is off by one like if click happened on the node after
+        // the color node instead of the color node itself
+        const resolvedPos = view.state.doc.resolve(pos);
+        if (resolvedPos.nodeBefore?.type.name === "colorsMarker") {
+          pos -= 1;
+        }
+        let node = view.state.doc.nodeAt(pos);
         const tr = view.state.tr.setMeta(contextMenuPluginKey, {
           type: SHOW_COLOR_MENU,
-          color: node.attrs.color,
+          color: nodeEl.dataset.color,
           nodePos: pos,
           node,
         });
@@ -172,4 +179,21 @@ export function ColorMenu({ editor }: ContextMenuProps) {
       </button>
     </div>
   );
+}
+
+/**
+ * Helper function to get the color node at the given position, if node is not found, return null
+ *
+ * @param r ResolvedPos
+ * @returns Node | null
+ *
+ */
+function getColorNode(r: ResolvedPos) {
+  if (r.nodeAfter && r.nodeAfter.type.name === "colorsMarker") {
+    return r.nodeAfter;
+  }
+  if (r.nodeBefore && r.nodeBefore.type.name === "colorsMarker") {
+    return r.nodeBefore;
+  }
+  return null;
 }
