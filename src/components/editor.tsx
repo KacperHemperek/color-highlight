@@ -2,7 +2,6 @@ import { EditorContent, useEditor } from "@tiptap/react";
 import StarterKit from "@tiptap/starter-kit";
 import { ColorsPlugin } from "../lib/color-extension";
 import Placeholder from "@tiptap/extension-placeholder";
-import { ColorMenu, ColorContextMenuExtension } from "./color-context-menu";
 
 export function Editor() {
   const editor = useEditor({
@@ -15,7 +14,6 @@ export function Editor() {
         emptyEditorClass:
           "text-slate-700 before:content-[attr(data-placeholder)]",
       }),
-      ColorContextMenuExtension,
     ],
     editorProps: {
       attributes: {
@@ -30,7 +28,6 @@ export function Editor() {
   return (
     <div className="relative">
       <EditorContent editor={editor} />
-      <ColorMenu editor={editor} />
     </div>
   );
 }

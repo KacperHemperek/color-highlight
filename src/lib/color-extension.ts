@@ -1,4 +1,6 @@
 import { InputRule, mergeAttributes, Node, nodePasteRule } from "@tiptap/core";
+import { ColorNode } from "../components/color-context-menu";
+import { ReactNodeViewRenderer } from "@tiptap/react";
 
 const colorRegexInput = /#([A-Fa-f0-9]{6})$/;
 const colorRegexPaste = /#([A-Fa-f0-9]{6})/g;
@@ -50,7 +52,7 @@ export const ColorsPlugin = Node.create({
         tag: "span[data-color]",
         getAttrs: (dom) => {
           const color = dom.getAttribute("data-color");
-          return color ? { color } : null; // Return null if no color attribute
+          return color ? { color } : { color: null };
         },
       },
     ];
@@ -61,7 +63,10 @@ export const ColorsPlugin = Node.create({
       style: getStyleString(color),
       class: "px-0.5 py-px cursor-pointer rounded-sm",
     };
-    return ["span", mergeAttributes(HTMLAttributes, attr), color];
+    return ["color-node", mergeAttributes(HTMLAttributes, attr), color];
+  },
+  addNodeView() {
+    return ReactNodeViewRenderer(ColorNode);
   },
   addInputRules() {
     const type = this.type;
