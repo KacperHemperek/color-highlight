@@ -3,6 +3,7 @@ import { CopyIcon } from "./icons/copy";
 import { EditIcon } from "./icons/edit";
 import { NodeViewWrapper, NodeViewProps } from "@tiptap/react";
 import * as Popover from "@radix-ui/react-popover";
+import { TextSelection } from "@tiptap/pm/state";
 
 function useForegroundColor(bgColor: string): string {
   const r = parseInt(bgColor.slice(1, 3), 16);
@@ -23,11 +24,30 @@ export function ColorNode(props: NodeViewProps) {
 
   const color = props.node.attrs.color;
 
-  const closeMenu = React.useCallback(() => setMenuOpen(false), []);
+  const putEditorCursorAfterNode = () => {
+    props.editor.chain().focus();
+    const pos = props.getPos() + 1;
+    const tr = props.view.state.tr.setSelection(
+      new TextSelection(props.view.state.doc.resolve(pos)),
+    );
+    props.view.dispatch(tr);
+  };
+
+  const closeMenu = () => {
+    putEditorCursorAfterNode();
+    setMenuOpen(false);
+  };
 
   const copyColorHex = () => {
     navigator.clipboard.writeText(color);
     closeMenu();
+  };
+
+  const toggleMenu = (val: boolean) => {
+    if (!val) {
+      putEditorCursorAfterNode();
+    }
+    setMenuOpen(val);
   };
 
   const changeColor = (e: React.ChangeEvent<HTMLInputElement>) => {
@@ -36,7 +56,7 @@ export function ColorNode(props: NodeViewProps) {
 
   return (
     <NodeViewWrapper className="color-node inline">
-      <Popover.Root open={menuOpen} onOpenChange={setMenuOpen}>
+      <Popover.Root open={menuOpen} onOpenChange={toggleMenu}>
         <Popover.Trigger
           data-color={color}
           style={{ backgroundColor: color, color: foregroundColor }}
