@@ -10,3 +10,5 @@ Color Highlighter is a simple website that allows you to highlight text with a c
 - [x] Add option to change color of the background using the color picker
 - [x] Add option to copy color to clipboard
 - [-] Add option to edit the text in two separate editors side by side
+- [ ] Show all unique colors in the editor in the separate section, allow to edit them and update the text in the editor
+- [ ] Fix issue with copying whole text with color nodes to clipboard and pasting it back in the editor
